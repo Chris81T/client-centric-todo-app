@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<!--[if IE 8]> 				 <html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+
+<head>
+	<meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>Foundation 4</title>
+
+  <link rel="stylesheet" href="css/normalize.css" />
+  
+  <link rel="stylesheet" href="css/foundation.css" />
+  
+
+  <script src="js/vendor/custom.modernizr.js"></script>
+
+</head>
+<body class="lift:content_id=main">
+
+  <div id="main" data-lift="surround?with=default;at=content" ng-app>
+			
+	<div class="row">				
+		<div class="row">
+			<div class="large-12 columns">
+				<header><h2 class="subheader">Create a new todo task</h2></header>
+			</div>
+		</div>
+		<div id="informBox" class="row" style="display: none;">
+			<div class="large-12 columns">
+				<span class="alert-box success">New todo task created : )</span>
+			</div>
+		</div>
+		<form data-lift="form.ajax">
+			<div class="row" data-lift="CreateTodo">
+				<div class="large-8 small-6 columns">
+					<input id="new-todo" placeholder="type here..." ng-model="newTodo"></input>
+				</div>
+				<div class="large-2 small-3 columns">
+					<button name="do-it" class="button" ng-disabled="!newTodo">Do it</button>
+				</div>
+				<div class="large-2 small-3 columns">
+					<button id="do-it-quickly" class="button" ng-disabled="!newTodo">Do it quickly!</button>
+				</div>
+			</div>
+		</form>
+	</div>
+	
+	<script>
+		function createTodoData() {
+			return {"content" : $("#new-todo").val()};
+		}
+		
+		function informUser() {
+//			$("#new-todo").val("");
+			$("#informBox").fadeIn(500).delay(1000).fadeOut(500);
+		}
+	</script>
+	
+	<div id="todo-ctrl" ng-controller="TodoCtrl">
+		<div class="row">		
+			<div class="row">
+				<div class="large-12 columns">
+					<header><h2 class="subheader">Todo's</h2></header>
+				</div>					
+			</div>
+			<div class="row" ng-hide="todos">
+				<span class="alert-box">Everything is done : )</span>
+			</div>
+			<div class="row" ng-repeat="todo in todos">
+				<div class="large-8 small-6 columns">
+					<div ng-include="template(todo.todoType)"></div>	
+				</div>
+				<div class="large-2 small-3 columns">
+					<button class="button" ng-click="done(todo)">Done</button>
+				</div>
+				<div class="large-2 small-3 columns">
+					<button class="button" ng-click="remove(todo)">Delete</button>
+				</div>			
+			</div>
+		</div>
+		
+		<div class="row" ng-show="finishedTodos">		
+			<div class="row">
+				<div class="large-12 columns">
+					<header><h2 class="subheader">Finished Todo's</h2></header>
+				</div>
+			</div>
+			<div class="row" ng-repeat="todo in finishedTodos">
+				<div class="large-8 small-6 columns">
+					<div ng-include="template(todo.todoType)"></div>	
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div data-lift="comet?type=TodoActor"></div>
+	
+	<script>
+		
+	    var ctrlScope = function() {
+	        var ctrlElement = $("#todo-ctrl");
+	        return angular.element(ctrlElement).scope();
+	    }	
+	
+		function appendTodos(todos) {
+            var scope = ctrlScope();
+            scope.$apply(function () {
+                scope.todos = scope.todos.concat(todos);
+            });
+        }
+	
+		function appendFinishedTodos(finishedTodos) {
+            var scope = ctrlScope();
+            scope.$apply(function () {
+                scope.finishedTodos = scope.finishedTodos.concat(finishedTodos);
+            });
+		}
+	
+		function incomingTodo(todo) {
+            var scope = ctrlScope();
+            scope.$apply(function () {
+            	scope.todos.unshift(todo);
+            });
+		}
+	
+		function incomingFinishedTodo(finishedTodo) {
+            var scope = ctrlScope();
+            scope.$apply(function () {
+              scope.remove(finishedTodo);
+              scope.finishedTodos.unshift(finishedTodo);
+            });
+		}
+		
+		function TodoCtrl($scope, $http) {
+
+			$scope.todos = []; 
+			$scope.finishedTodos = [];
+			
+			$scope.template = function(type) {
+				switch(type) {
+					case "normal" : return "static/normal.html";
+					case "important" : return "static/important.html";
+					default: return "static/unknown.html";
+				}
+			}
+			
+			$scope.remove = function(todo) {
+				$scope.todos = jQuery.grep($scope.todos, function(data) {
+					return todo != data;
+				});				
+			}
+						
+			$scope.done = function(todo) {
+				// make a server call....
+				$http({method: 'POST', url: '/lift/api/done/' + todo.id});
+			}
+		}
+	
+	</script>
+	
+  </div>   	
+  
+  <script src="js/foundation.min.js"></script>
+  <!--
+  
+  <script src="js/foundation/foundation.js"></script>
+  
+  <script src="js/foundation/foundation.alerts.js"></script>
+  
+  <script src="js/foundation/foundation.clearing.js"></script>
+  
+  <script src="js/foundation/foundation.cookie.js"></script>
+  
+  <script src="js/foundation/foundation.dropdown.js"></script>
+  
+  <script src="js/foundation/foundation.forms.js"></script>
+  
+  <script src="js/foundation/foundation.joyride.js"></script>
+  
+  <script src="js/foundation/foundation.magellan.js"></script>
+  
+  <script src="js/foundation/foundation.orbit.js"></script>
+  
+  <script src="js/foundation/foundation.placeholder.js"></script>
+  
+  <script src="js/foundation/foundation.reveal.js"></script>
+  
+  <script src="js/foundation/foundation.section.js"></script>
+  
+  <script src="js/foundation/foundation.tooltips.js"></script>
+  
+  <script src="js/foundation/foundation.topbar.js"></script>
+  
+  -->
+  
+  <script>
+    $(document).foundation();
+  </script>
+</body>
+</html>
