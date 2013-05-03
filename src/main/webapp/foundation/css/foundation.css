@@ -107,8 +107,11 @@ select {
     float: left; }
   .row .row {
     width: auto;
+    /*
+    removed to avoid horizontal scroll bar when window is smaller
     margin-left: -0.9375em;
     margin-right: -0.9375em;
+    */
     margin-top: 0;
     margin-bottom: 0;
     max-width: none;

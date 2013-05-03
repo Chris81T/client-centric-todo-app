@@ -11,7 +11,7 @@ object TodoStorage {
 
   def appendFinishedTodo(todo: Todo) = finishedTodos ::= todo
 
-  def deleteTodo(todo: Todo) = todos = todos.filter(_ eq todo)
+  def deleteTodo(todo: Todo) = todos = todos.filter(_ != todo)
   
   def generateId() = todos.length
   

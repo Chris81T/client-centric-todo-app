@@ -28,8 +28,9 @@ object TodoServer extends LiftActor with ListenerManager {
     case todo: IncomingTodo => 	  
       TodoStorage.appendTodo(todo.todo)
       updateListeners(todo)
-    case todo: FinishedTodo => 
-      TodoStorage.appendFinishedTodo(todo.todo)
+    case todo: FinishedTodo =>
+      updateListeners(todo)
+    case todo: RemovedTodo =>
       updateListeners(todo)
   }  
 }
@@ -57,6 +58,9 @@ class TodoActor extends CometActor with CometListener {
     case FinishedTodo(todo) => 
       printRef; println("[ ACTOR ] incoming finished todo...")
       partialUpdate(JE.Call("incomingFinishedTodo", jsonTodo(todo)).cmd)
+    case RemovedTodo(todo) =>
+      printRef; println("[ ACTOR ] incoming removed todo...")
+      partialUpdate(JE.Call("incomingRemovedTodo", jsonTodo(todo)).cmd)
   }
   
   def render = {

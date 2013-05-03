@@ -17,7 +17,7 @@
 </head>
 <body class="lift:content_id=main">
 
-  <div id="main" data-lift="surround?with=default;at=content" ng-app>
+  <div id="main" data-lift="surround?with=default;at=content" ng-app="todoApp">
 			
 	<div class="row">				
 		<div class="row">
@@ -32,14 +32,14 @@
 		</div>
 		<form data-lift="form.ajax">
 			<div class="row" data-lift="CreateTodo">
-				<div class="large-8 small-6 columns">
+				<div class="large-8 columns">
 					<input id="new-todo" placeholder="type here..." ng-model="newTodo"></input>
 				</div>
-				<div class="large-2 small-3 columns">
-					<button name="do-it" class="button" ng-disabled="!newTodo">Do it</button>
+				<div class="large-2 columns">
+					<button name="do-it" class="button" ng-disabled="!newTodo" ng-click="newTodo = ''">Do it</button>
 				</div>
-				<div class="large-2 small-3 columns">
-					<button id="do-it-quickly" class="button" ng-disabled="!newTodo">Do it quickly!</button>
+				<div class="large-2 columns">
+					<button id="do-it-quickly" class="button" ng-disabled="!newTodo" ng-click="newTodo = ''">Do it quickly!</button>
 				</div>
 			</div>
 		</form>
@@ -51,7 +51,7 @@
 		}
 		
 		function informUser() {
-//			$("#new-todo").val("");
+			$("#new-todo").val("");
 			$("#informBox").fadeIn(500).delay(1000).fadeOut(500);
 		}
 	</script>
@@ -63,23 +63,26 @@
 					<header><h2 class="subheader">Todo's</h2></header>
 				</div>					
 			</div>
-			<div class="row" ng-hide="todos">
+			<div class="row" ng-show="todos.length == 0">
 				<span class="alert-box">Everything is done : )</span>
 			</div>
-			<div class="row" ng-repeat="todo in todos">
-				<div class="large-8 small-6 columns">
+			<div class="row" ng-repeat="todo in todos" ng-hover>
+				<div class="large-8 columns">
 					<div ng-include="template(todo.todoType)"></div>	
 				</div>
-				<div class="large-2 small-3 columns">
-					<button class="button" ng-click="done(todo)">Done</button>
-				</div>
-				<div class="large-2 small-3 columns">
-					<button class="button" ng-click="remove(todo)">Delete</button>
-				</div>			
+                <div class="row large-4 columns" style="display:none">
+                    <div class="large-6 small-6 columns">
+                        <button class="button" ng-click="done(todo)">Done</button>
+                    </div>
+                    <div class="large-6 small-6 columns">
+                        <button class="button" ng-click="removeTodoWithRest(todo)">Delete</button>
+                    </div>
+                </div>
+                <hr/>
 			</div>
 		</div>
 		
-		<div class="row" ng-show="finishedTodos">		
+		<div class="row" ng-show="finishedTodos.length > 0">
 			<div class="row">
 				<div class="large-12 columns">
 					<header><h2 class="subheader">Finished Todo's</h2></header>
@@ -96,7 +99,19 @@
 	<div data-lift="comet?type=TodoActor"></div>
 	
 	<script>
-		
+		var todoApp = angular.module('todoApp', []);
+        todoApp.directive('ngHover', function() {
+            return {
+                link: function (scope, element) {
+                    element.bind('mouseenter', function() {
+                        $(element.children()[1]).fadeIn(200);
+                    })
+                    element.bind('mouseleave', function() {
+                        $(element.children()[1]).fadeOut(300);
+                    })
+                }
+            }
+        });
 	    var ctrlScope = function() {
 	        var ctrlElement = $("#todo-ctrl");
 	        return angular.element(ctrlElement).scope();
@@ -130,7 +145,14 @@
               scope.finishedTodos.unshift(finishedTodo);
             });
 		}
-		
+
+        function incomingRemovedTodo(removedTodo) {
+            var scope = ctrlScope();
+            scope.$apply(function () {
+                scope.remove(removedTodo);
+            });
+        }
+
 		function TodoCtrl($scope, $http) {
 
 			$scope.todos = []; 
@@ -145,15 +167,24 @@
 			}
 			
 			$scope.remove = function(todo) {
-				$scope.todos = jQuery.grep($scope.todos, function(data) {
-					return todo != data;
-				});				
+				/*
+                filter function seems to be the best approach to delete
+                element from array, alternative:
+                $scope.todos.slice($scope.todos.indexOf(todo), 1);
+                */
+                $scope.todos = $scope.todos.filter(function(elem) {
+                   return elem.id != todo.id;
+                });
 			}
 						
 			$scope.done = function(todo) {
 				// make a server call....
 				$http({method: 'POST', url: '/lift/api/done/' + todo.id});
 			}
+
+            $scope.removeTodoWithRest = function(todo) {
+                $http({method: 'POST', url: '/lift/api/remove/' + todo.id});
+            }
 		}
 	
 	</script>
